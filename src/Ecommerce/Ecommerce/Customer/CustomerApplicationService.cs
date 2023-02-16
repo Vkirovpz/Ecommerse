@@ -30,14 +30,9 @@ namespace Ecommerce.Customer
             await repository.SaveAsync(customer).ConfigureAwait(false);
         }
 
-        //public async Task RenameCustomerAsync(string id, string firstName, string lastName)
-        //{
-        //    var customer = await repository.LoadAsync(id).ConfigureAwait(false);
-        //    if (customer is null)
-        //        return;
+        public async Task HandleAsync(AddToCart command)
+        {
 
-        //    customer.Rename(firstName, lastName);
-        //    await repository.SaveAsync(customer).ConfigureAwait(false);
-        //}
+        }
     }
 }

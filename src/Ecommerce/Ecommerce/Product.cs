@@ -2,10 +2,8 @@
 {
     public class Product
     {
-        public string Name { get; }
-
         public string Sku { get; }
-
+        public string Name { get; }
         public decimal Price { get; }
     }
 }

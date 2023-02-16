@@ -28,6 +28,11 @@ namespace Ecommerce.Customer
             State.Cart.AddProduct(product, quantity);
         }
 
+        public void RemoveFromCart(Product product)
+        {
+            State.Cart.RemoveProduct(product.Sku);
+        }
+
         public void Rename(string firstName, string lastName)
         {
             if (firstName != State.FirstName)

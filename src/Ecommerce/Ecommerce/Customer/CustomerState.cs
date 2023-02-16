@@ -1,4 +1,5 @@
 ﻿using Ecommerce.Customer.Events;
+using Ecommerce.Cart;
 
 namespace Ecommerce.Customer
 {

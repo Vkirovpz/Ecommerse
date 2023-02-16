@@ -6,6 +6,11 @@ namespace Ecommerce.Cart
 {
     public class ShoppingCart
     {
+        public ShoppingCart(ShoppingCartState state)
+        {
+            State = state ?? throw new ArgumentNullException(nameof(state));
+        }
+
         public ShoppingCart(string id, CustomerAggregate customer)
         {
             if (string.IsNullOrEmpty(id)) throw new ArgumentException($"'{nameof(id)}' cannot be null or empty.", nameof(id));

@@ -31,6 +31,10 @@ namespace Ecommerce.Customer
         {
             LastName = e.NewLastName;
         }
+        private void When(ShoppingCartCreated e)
+        {
+            Cart = new ShoppingCart(e.Id, e.CustomerId);
+        }
 
         public void Apply(IEvent @event)
         {

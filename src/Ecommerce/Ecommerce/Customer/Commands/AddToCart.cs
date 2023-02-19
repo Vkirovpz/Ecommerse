@@ -8,7 +8,7 @@
 
             if (product is null) throw new ArgumentNullException(nameof(product));
             if (quantity <= 0) throw new ArgumentOutOfRangeException();
-
+            Id = id;
             Product = product;
             Quantity = quantity;
         }

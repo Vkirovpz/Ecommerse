@@ -1,5 +1,4 @@
 ﻿using Ecommerce.Cart.Events;
-using Ecommerce.Customer;
 using Ecommerce.Customer.Events;
 
 namespace Ecommerce.Cart
@@ -11,14 +10,14 @@ namespace Ecommerce.Cart
             State = state ?? throw new ArgumentNullException(nameof(state));
         }
 
-        public ShoppingCart(string id, CustomerAggregate customer)
+        public ShoppingCart(string id, string customerId)
         {
             if (string.IsNullOrEmpty(id)) throw new ArgumentException($"'{nameof(id)}' cannot be null or empty.", nameof(id));
-            if (customer is null) throw new ArgumentNullException(nameof(customer));
+            if (string.IsNullOrEmpty(customerId)) throw new ArgumentException($"'{nameof(customerId)}' cannot be null or empty.", nameof(customerId));
 
             State = new ShoppingCartState();
 
-            var @event = new ShoppingCartCreated(id, customer);
+            var @event = new ShoppingCartCreated(id, customerId);
             State.Apply(@event);
         }
 
@@ -26,13 +25,12 @@ namespace Ecommerce.Cart
 
         public void AddProduct(Product product, int quantity)
         {
-            //State.Apply(ItemAddedToShoppingCart);
-
+            State.Apply(new ItemAddedToShoppingCart(product, quantity));
         }
 
         public void RemoveProduct(string sku)
         {
-
+            State.Apply(new ItemRemovedFromShoppingCart(sku));
         }
     }
 }

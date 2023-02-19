@@ -1,8 +1,8 @@
 ﻿namespace Ecommerce.Cart.Commands
 {
-    public class AddProduct : ICommand
+    public class CreateCart : ICommand
     {
-        public AddProduct()
+        public CreateCart()
         {
         }
     }

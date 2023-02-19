@@ -2,5 +2,8 @@
 {
     public class RemoveProduct : ICommand
     {
+        public RemoveProduct()
+        {
+        }
     }
 }

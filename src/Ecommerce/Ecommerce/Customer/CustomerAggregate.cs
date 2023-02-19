@@ -25,6 +25,11 @@ namespace Ecommerce.Customer
 
         public void AddToCart(Product product, int quantity)
         {
+            if (State.Cart is null)
+            {
+                var cartId = Guid.NewGuid().ToString();
+                State.Apply(new ShoppingCartCreated(cartId, State.Id));
+            }
             State.Cart.AddProduct(product, quantity);
         }
 

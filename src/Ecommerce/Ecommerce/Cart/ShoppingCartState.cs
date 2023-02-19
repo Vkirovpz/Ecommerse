@@ -8,12 +8,12 @@ namespace Ecommerce.Cart
     {
         public Queue<IEvent> UnsavedEvents { get; } = new Queue<IEvent>();
 
+        private HashSet<ShoppingCartItem> Items = new();
+
         public string Id { get; private set; }
         public string CustomerId { get; private set; }
 
         public CustomerAggregate Customer { get; private set; }
-
-        public HashSet<ShoppingCartItem> Items { get; private set; }
 
         private void When(ShoppingCartCreated e)
         {

@@ -10,6 +10,7 @@ await appService.HandleAsync(new CreateCustomer(id, "Valio", "Kirov"));
 //await appService.HandleAsync(new RenameCustomer(id, "Valention", "Kirov"));
 //await appService.HandleAsync(new RenameCustomer(id, "asdf", "asdfasdfa"));
 await appService.HandleAsync(new AddToCart(id, product, 2));
+await appService.HandleAsync(new RemoveFromCart(id, product));
 
 //var id2 = Guid.NewGuid().ToString();
 //await appService.HandleAsync(new CreateCustomer(id2, "Customer2", "Kirov"));

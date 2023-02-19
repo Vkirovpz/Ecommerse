@@ -32,7 +32,15 @@ public class CustomerRepository : IAggregateRootRepository<CustomerAggregate>
             var bytes = ToByteArray(e);
             data.Add(new Tuple<string, Type, byte[]>(aggregateRoot.State.Id, e.GetType(), bytes));
         }
-
+        if (aggregateRoot.State.Cart != null)
+        {
+            foreach (var e in aggregateRoot.State.Cart.State.UnsavedEvents)
+            {
+                var bytes = ToByteArray(e);
+                data.Add(new Tuple<string, Type, byte[]>(aggregateRoot.State.Id, e.GetType(), bytes));
+            }
+        }
+       
         return Task.CompletedTask;
     }
 

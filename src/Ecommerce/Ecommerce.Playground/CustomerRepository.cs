@@ -22,15 +22,22 @@ public class CustomerRepository : IAggregateRootRepository<CustomerAggregate>
             return Task.FromResult<CustomerAggregate>(null);
 
         var state = new CustomerState();
-        foreach (var record in found)
+        foreach (var record  in found)
         {
             var bytes = record.Item3;
             var obj = FromByteArray(record.Item2, bytes);
             state.Restore((dynamic)obj);
         }
 
+        if (state.Cart is not null)
+        {
+            var cartId = state.Cart.State.Id;
+            var cart = cartRepository.LoadAsync(state.Cart.State.Id);
+            state.SetCart(cart.Result);
+            state.Cart.State.setCartIds(cartId, state.Id);
+        }
+
         var customer = new CustomerAggregate(state);
-        //var cart = cartRepository.LoadAsync(customer.State.Cart.State.Id);
 
         return Task.FromResult(customer);
     }
@@ -43,6 +50,14 @@ public class CustomerRepository : IAggregateRootRepository<CustomerAggregate>
             var bytes = ToByteArray(e);
             data.Add(new Tuple<string, Type, byte[]>(aggregateRoot.State.Id, e.GetType(), bytes));
         }
+
+        var cart = aggregateRoot.State.Cart;
+
+        if (cart is not null)
+        {
+            cartRepository.SaveAsync(cart);
+        }
+
         return Task.CompletedTask;
     }
 

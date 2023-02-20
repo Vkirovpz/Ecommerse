@@ -1,5 +1,4 @@
 ﻿using Ecommerce.Cart.Events;
-using Ecommerce.Customer.Events;
 
 namespace Ecommerce.Cart
 {
@@ -16,8 +15,7 @@ namespace Ecommerce.Cart
             if (string.IsNullOrEmpty(customerId)) throw new ArgumentException($"'{nameof(customerId)}' cannot be null or empty.", nameof(customerId));
 
             State = new ShoppingCartState();
-            State.setId(id);
-            State.setCustomerId(customerId);
+            State.setCartIds(id, customerId);
             //State.Apply();
         }
 

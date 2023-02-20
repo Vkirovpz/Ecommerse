@@ -12,7 +12,7 @@ namespace Ecommerce.Cart
 
         public CustomerAggregate Customer { get; private set; }
 
-        public HashSet<ShoppingCartItem> Items { get; private set; } = new();
+        public HashSet<ShoppingCartItem> Items { get; } = new();
 
         private void When(ItemAddedToShoppingCart e)
         {
@@ -21,7 +21,7 @@ namespace Ecommerce.Cart
 
         private void When(ItemQuantityIncreased e)
         {
-            var item = Items.First(i => i == e.Item);
+            var item = Items.FirstOrDefault(i => i == e.Item);
             item.IncreaseQuantity(e.NewQuantity);
         }
 
@@ -42,14 +42,10 @@ namespace Ecommerce.Cart
             When((dynamic)@event);
         }
 
-        public void setId(string id)
+        public void setCartIds(string id, string customerId)
         {
-            Id= id;
-        }
-
-        public void setCustomerId(string customerId)
-        {
-            CustomerId= customerId;
+            Id = id;
+            CustomerId = customerId;
         }
     }
 }

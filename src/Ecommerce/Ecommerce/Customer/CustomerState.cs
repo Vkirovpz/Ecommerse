@@ -46,5 +46,10 @@ namespace Ecommerce.Customer
         {
             When((dynamic)@event);
         }
+
+        public void SetCart(ShoppingCart cart) 
+        { 
+            Cart = cart;
+        }
     }
 }

@@ -2,13 +2,11 @@
 {
     public class ItemAddedToShoppingCart : IEvent
     {
-        public ItemAddedToShoppingCart(Product product, int quantity)
+        public ItemAddedToShoppingCart(ShoppingCartItem item)
         {
-            Product = product;
-            Quantity = quantity;
+            Item = item;
         }
 
-        public Product Product { get; }
-        public int Quantity { get; }
+        public ShoppingCartItem Item { get; }
     }
 }

@@ -1,8 +1,8 @@
 ﻿namespace Ecommerce.Customer.Commands
 {
-    public class RemoveFromCart : ICommand
+    public class RemoveProductFromCart : ICommand
     {
-        public RemoveFromCart(string customerid, Product product)
+        public RemoveProductFromCart(string customerid, Product product)
         {
             if (string.IsNullOrEmpty(customerid)) throw new ArgumentException($"'{nameof(customerid)}' cannot be null or empty.", nameof(customerid));
 

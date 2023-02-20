@@ -1,6 +1,5 @@
 ﻿using Ecommerce.Cart.Events;
 using Ecommerce.Customer;
-using Ecommerce.Customer.Events;
 
 namespace Ecommerce.Cart
 {
@@ -8,40 +7,28 @@ namespace Ecommerce.Cart
     {
         public Queue<IEvent> UnsavedEvents { get; } = new Queue<IEvent>();
 
-        private HashSet<ShoppingCartItem> Items = new();
-
         public string Id { get; private set; }
         public string CustomerId { get; private set; }
 
         public CustomerAggregate Customer { get; private set; }
 
-        private void When(ShoppingCartCreated e)
-        {
-            Id = e.Id;
-            CustomerId = e.CustomerId;
-        }
+        public HashSet<ShoppingCartItem> Items { get; private set; } = new();
 
         private void When(ItemAddedToShoppingCart e)
         {
-            var shoppingCartItem = Items.FirstOrDefault(i => i.Product.Sku == e.Product.Sku);
-            if (shoppingCartItem is null)
-            {
-                var item = new ShoppingCartItem(e.Product, e.Quantity);
-                Items.Add(item);
-            }
-            else
-            {
-                shoppingCartItem.IncreaseQuantity(e.Quantity);
-            }
-            
+            Items.Add(e.Item);
+        }
+
+        private void When(ItemQuantityIncreased e)
+        {
+            var item = Items.First(i => i == e.Item);
+            item.IncreaseQuantity(e.NewQuantity);
         }
 
         private void When(ItemRemovedFromShoppingCart e)
         {
-            var shoppingCartItem = Items.FirstOrDefault(i => i.Product.Sku == e.Sku);
-            if (shoppingCartItem is null) return;
-            Items.Remove(shoppingCartItem);
-     
+            var item = Items.FirstOrDefault(i => i.Product.Sku == e.Sku);
+            Items.Remove(item);
         }
 
         public void Apply(IEvent @event)
@@ -53,6 +40,16 @@ namespace Ecommerce.Cart
         public void Restore(IEvent @event)
         {
             When((dynamic)@event);
+        }
+
+        public void setId(string id)
+        {
+            Id= id;
+        }
+
+        public void setCustomerId(string customerId)
+        {
+            CustomerId= customerId;
         }
     }
 }

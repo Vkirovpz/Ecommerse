@@ -1,8 +1,8 @@
 ﻿namespace Ecommerce.Customer.Commands
 {
-    public class AddToCart: ICommand
+    public class AddProductToCart: ICommand
     {
-        public AddToCart(string id, Product product, int quantity)
+        public AddProductToCart(string id, Product product, int quantity)
         {
             if (string.IsNullOrEmpty(id)) throw new ArgumentException($"'{nameof(id)}' cannot be null or empty.", nameof(id));
 

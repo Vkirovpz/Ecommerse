@@ -6,8 +6,8 @@ namespace Ecommerce.Customer
     public class CustomerApplicationService :
         ICommandHandler<CreateCustomer>,
         ICommandHandler<RenameCustomer>,
-        ICommandHandler<AddToCart>,
-        ICommandHandler<RemoveFromCart>
+        ICommandHandler<AddProductToCart>,
+        ICommandHandler<RemoveProductFromCart>
     {
         private readonly IAggregateRootRepository<CustomerAggregate> repository;
 
@@ -35,7 +35,7 @@ namespace Ecommerce.Customer
             await repository.SaveAsync(customer).ConfigureAwait(false);
         }
 
-        public async Task HandleAsync(AddToCart command)
+        public async Task HandleAsync(AddProductToCart command)
         {
             var customer = await repository.LoadAsync(command.Id).ConfigureAwait(false);
             if (customer is null) return;
@@ -43,9 +43,10 @@ namespace Ecommerce.Customer
             customer.AddToCart(command.Product, command.Quantity);
 
             await repository.SaveAsync(customer).ConfigureAwait(false);
+
         }
 
-        public async Task HandleAsync(RemoveFromCart command)
+        public async Task HandleAsync(RemoveProductFromCart command)
         {
             var customer = await repository.LoadAsync(command.Customerid).ConfigureAwait(false);
             if (customer is null) return;

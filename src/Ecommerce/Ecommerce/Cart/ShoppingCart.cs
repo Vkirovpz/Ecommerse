@@ -16,20 +16,32 @@ namespace Ecommerce.Cart
             if (string.IsNullOrEmpty(customerId)) throw new ArgumentException($"'{nameof(customerId)}' cannot be null or empty.", nameof(customerId));
 
             State = new ShoppingCartState();
-
-            var @event = new ShoppingCartCreated(id, customerId);
-            State.Apply(@event);
+            State.setId(id);
+            State.setCustomerId(customerId);
+            //State.Apply();
         }
 
         public ShoppingCartState State { get;}
 
         public void AddProduct(Product product, int quantity)
         {
-            State.Apply(new ItemAddedToShoppingCart(product, quantity));
+            var shoppingCartItem = State.Items.FirstOrDefault(i => i.Product.Sku == product.Sku);
+            if (shoppingCartItem is null)
+            {
+                var item = new ShoppingCartItem(product, quantity);
+                State.Apply(new ItemAddedToShoppingCart(item));
+            }
+            else
+            {
+                State.Apply(new ItemQuantityIncreased(shoppingCartItem, shoppingCartItem.Quantity, quantity));
+            }
+
         }
 
         public void RemoveProduct(string sku)
         {
+            var shoppingCartItem = State.Items.FirstOrDefault(i => i.Product.Sku == sku);
+            if (shoppingCartItem is null) return;
             State.Apply(new ItemRemovedFromShoppingCart(sku));
         }
     }

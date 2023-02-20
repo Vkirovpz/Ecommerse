@@ -1,20 +1,14 @@
-﻿namespace Ecommerce.Customer.Events
+﻿using Ecommerce.Cart;
+
+namespace Ecommerce.Customer.Events
 {
     public class ShoppingCartCreated : IEvent
     {
-        public ShoppingCartCreated(string id, string customerId)
+        public ShoppingCartCreated(ShoppingCartId id)
         {
-            if (string.IsNullOrEmpty(id)) throw new ArgumentException($"'{nameof(id)}' cannot be null or empty.", nameof(id));
-            if (string.IsNullOrEmpty(customerId)) throw new ArgumentException($"'{nameof(customerId)}' cannot be null or empty.", nameof(customerId));
-
-            Id = id;
-            CustomerId = customerId;
-
+            Id = id ?? throw new ArgumentNullException(nameof(id));
         }
 
-        public string Id { get; }
-        public string CustomerId { get; }
-        public CustomerAggregate Customer { get; }
-
+        public ShoppingCartId Id { get; }
     }
 }

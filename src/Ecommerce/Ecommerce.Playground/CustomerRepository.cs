@@ -32,9 +32,8 @@ public class CustomerRepository : IAggregateRootRepository<CustomerAggregate>
         if (state.Cart is not null)
         {
             var cartId = state.Cart.State.Id;
-            var cart = cartRepository.LoadAsync(state.Cart.State.Id);
+            var cart = cartRepository.LoadAsync(state.Cart.State.Id.Value);
             state.SetCart(cart.Result);
-            state.Cart.State.setCartIds(cartId, state.Id);
         }
 
         var customer = new CustomerAggregate(state);
@@ -44,11 +43,10 @@ public class CustomerRepository : IAggregateRootRepository<CustomerAggregate>
 
     public Task SaveAsync(CustomerAggregate aggregateRoot)
     {
-
         foreach (var e in aggregateRoot.State.UnsavedEvents)
         {
             var bytes = ToByteArray(e);
-            data.Add(new Tuple<string, Type, byte[]>(aggregateRoot.State.Id, e.GetType(), bytes));
+            data.Add(new Tuple<string, Type, byte[]>(aggregateRoot.State.Id.Value, e.GetType(), bytes));
         }
 
         var cart = aggregateRoot.State.Cart;

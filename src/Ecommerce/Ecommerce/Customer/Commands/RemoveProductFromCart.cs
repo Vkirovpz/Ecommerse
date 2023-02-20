@@ -2,16 +2,16 @@
 {
     public class RemoveProductFromCart : ICommand
     {
-        public RemoveProductFromCart(string customerid, Product product)
+        public RemoveProductFromCart(CustomerId customerid, Product product)
         {
-            if (string.IsNullOrEmpty(customerid)) throw new ArgumentException($"'{nameof(customerid)}' cannot be null or empty.", nameof(customerid));
-
             if (product is null) throw new ArgumentNullException(nameof(product));
-            Customerid = customerid;
+
+            Customerid = customerid ?? throw new ArgumentNullException(nameof(customerid));
             Product = product;
         }
 
-        public string Customerid { get; }
+        public CustomerId Customerid { get; }
+
         public Product Product { get; }
     }
 }

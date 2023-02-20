@@ -5,31 +5,18 @@ namespace Ecommerce.Cart
 {
     public class ShoppingCartState
     {
+        public ShoppingCartState(ShoppingCartId id)
+        {
+            Id = id ?? throw new ArgumentNullException(nameof(id));
+        }
+
         public Queue<IEvent> UnsavedEvents { get; } = new Queue<IEvent>();
 
-        public string Id { get; private set; }
-        public string CustomerId { get; private set; }
+        public ShoppingCartId Id { get; private set; }
 
         public CustomerAggregate Customer { get; private set; }
 
-        public HashSet<ShoppingCartItem> Items { get; } = new();
-
-        private void When(ItemAddedToShoppingCart e)
-        {
-            Items.Add(e.Item);
-        }
-
-        private void When(ItemQuantityIncreased e)
-        {
-            var item = Items.FirstOrDefault(i => i == e.Item);
-            item.IncreaseQuantity(e.NewQuantity);
-        }
-
-        private void When(ItemRemovedFromShoppingCart e)
-        {
-            var item = Items.FirstOrDefault(i => i.Product.Sku == e.Sku);
-            Items.Remove(item);
-        }
+        public List<ShoppingCartItem> Items { get; } = new();
 
         public void Apply(IEvent @event)
         {
@@ -42,10 +29,39 @@ namespace Ecommerce.Cart
             When((dynamic)@event);
         }
 
-        public void setCartIds(string id, string customerId)
+        public class ShoppingCartItem
         {
-            Id = id;
-            CustomerId = customerId;
+            public ShoppingCartItem(Product product, int quantity)
+            {
+                Product = product;
+                Quantity = quantity;
+            }
+
+            public Product Product { get; }
+
+            public int Quantity { get; private set; }
+
+            public void IncreaseQuantity(int count)
+            {
+                Quantity += count;
+            }
+        }
+
+        private void When(ProductAddedToShoppingCart e)
+        {
+            Items.Add(new ShoppingCartItem(e.Product, e.Quantity));
+        }
+
+        private void When(ProductQuantityIncreased e)
+        {
+            var item = Items.FirstOrDefault(i => i.Product == e.Product);
+            item.IncreaseQuantity(e.NewQuantity);
+        }
+
+        private void When(ProductRemovedFromShoppingCart e)
+        {
+            var item = Items.FirstOrDefault(i => i.Product.Sku == e.Sku);
+            Items.Remove(item);
         }
     }
 }

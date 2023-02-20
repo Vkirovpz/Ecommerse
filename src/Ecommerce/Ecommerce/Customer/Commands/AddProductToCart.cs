@@ -2,17 +2,16 @@
 {
     public class AddProductToCart: ICommand
     {
-        public AddProductToCart(string id, Product product, int quantity)
+        public AddProductToCart(CustomerId id, Product product, int quantity)
         {
-            if (string.IsNullOrEmpty(id)) throw new ArgumentException($"'{nameof(id)}' cannot be null or empty.", nameof(id));
-
             if (product is null) throw new ArgumentNullException(nameof(product));
             if (quantity <= 0) throw new ArgumentOutOfRangeException();
-            Id = id;
+
+            Id = id ?? throw new ArgumentNullException(nameof(id));
             Product = product;
             Quantity = quantity;
         }
-        public string Id { get; }
+        public CustomerId Id { get; }
         public Product Product { get;}
         public int Quantity { get;}
     }

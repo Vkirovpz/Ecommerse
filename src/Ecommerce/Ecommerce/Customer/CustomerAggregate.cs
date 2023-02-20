@@ -9,11 +9,11 @@ namespace Ecommerce.Customer
             State = state ?? throw new ArgumentNullException(nameof(state));
         }
 
-        public CustomerAggregate(string id, string firstName, string lastName)
+        public CustomerAggregate(CustomerId id, FirstName firstName, LastName lastName)
         {
-            if (string.IsNullOrEmpty(id)) throw new ArgumentException($"'{nameof(id)}' cannot be null or empty.", nameof(id));
-            if (string.IsNullOrEmpty(firstName)) throw new ArgumentException($"'{nameof(firstName)}' cannot be null or empty.", nameof(firstName));
-            if (string.IsNullOrEmpty(lastName)) throw new ArgumentException($"'{nameof(lastName)}' cannot be null or empty.", nameof(lastName));
+            if (id is null) throw new ArgumentNullException(nameof(id));
+            if (firstName is null) throw new ArgumentNullException(nameof(firstName));
+            if (lastName is null) throw new ArgumentNullException(nameof(lastName));
 
             State = new CustomerState();
 
@@ -28,8 +28,9 @@ namespace Ecommerce.Customer
             if (State.Cart is null)
             {
                 var cartId = Guid.NewGuid().ToString();
-                State.Apply(new ShoppingCartCreated(cartId, State.Id));
+                State.Apply(new ShoppingCartCreated(new Cart.ShoppingCartId(State.Id, cartId)));
             }
+
             State.Cart.AddProduct(product, quantity);
         }
 
@@ -38,7 +39,7 @@ namespace Ecommerce.Customer
             State.Cart.RemoveProduct(product.Sku);
         }
 
-        public void Rename(string firstName, string lastName)
+        public void Rename(FirstName firstName, LastName lastName)
         {
             if (firstName != State.FirstName)
                 State.Apply(new CustomerFirstNameChanged(State.Id, State.FirstName, firstName));

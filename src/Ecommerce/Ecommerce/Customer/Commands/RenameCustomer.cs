@@ -2,19 +2,17 @@
 {
     public class RenameCustomer : ICommand
     {
-        public RenameCustomer(string id, string firstName, string lastName)
+        public RenameCustomer(string id, FirstName firstName, LastName lastName)
         {
             if (string.IsNullOrEmpty(id)) throw new ArgumentException($"'{nameof(id)}' cannot be null or empty.", nameof(id));
-            if (string.IsNullOrEmpty(firstName)) throw new ArgumentException($"'{nameof(firstName)}' cannot be null or empty.", nameof(firstName));
-            if (string.IsNullOrEmpty(lastName)) throw new ArgumentException($"'{nameof(lastName)}' cannot be null or empty.", nameof(lastName));
 
             Id = id;
-            FirstName = firstName;
-            LastName = lastName;
+            FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
+            LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
         }
 
         public string Id { get; }
-        public string FirstName { get; }
-        public string LastName { get; }
+        public FirstName FirstName { get; }
+        public LastName LastName { get; }
     }
 }

@@ -7,11 +7,11 @@ namespace Ecommerce.Customer
     {
         public Queue<IEvent> UnsavedEvents { get; } = new Queue<IEvent>();
 
-        public string Id { get; private set; }
+        public CustomerId Id { get; private set; }
 
-        public string FirstName { get; private set; }
+        public FirstName FirstName { get; private set; }
 
-        public string LastName { get; private set; }
+        public LastName LastName { get; private set; }
 
         public ShoppingCart Cart { get; private set; }
 
@@ -31,9 +31,10 @@ namespace Ecommerce.Customer
         {
             LastName = e.NewLastName;
         }
+
         private void When(ShoppingCartCreated e)
         {
-            Cart = new ShoppingCart(e.Id, e.CustomerId);
+            Cart = new ShoppingCart(e.Id);
         }
 
         public void Apply(IEvent @event)

@@ -2,15 +2,15 @@
 {
     public class CustomerFirstNameChanged : IEvent
     {
-        public CustomerFirstNameChanged(string id, string oldFirstName, string newFirstName)
+        public CustomerFirstNameChanged(CustomerId id, FirstName oldFirstName, FirstName newFirstName)
         {
-            Id = id;
-            OldFirstName = oldFirstName;
-            NewFirstName = newFirstName;
+            Id = id ?? throw new ArgumentNullException(nameof(id));
+            OldFirstName = oldFirstName ?? throw new ArgumentNullException(nameof(oldFirstName));
+            NewFirstName = newFirstName ?? throw new ArgumentNullException(nameof(newFirstName));
         }
 
-        public string Id { get; }
-        public string OldFirstName { get; }
-        public string NewFirstName { get; }
+        public CustomerId Id { get; }
+        public FirstName OldFirstName { get; }
+        public FirstName NewFirstName { get; }
     }
 }

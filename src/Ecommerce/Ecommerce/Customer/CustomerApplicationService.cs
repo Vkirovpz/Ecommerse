@@ -1,5 +1,4 @@
-﻿using Ecommerce.Cart;
-using Ecommerce.Customer.Commands;
+﻿using Ecommerce.Customer.Commands;
 
 namespace Ecommerce.Customer
 {
@@ -18,7 +17,7 @@ namespace Ecommerce.Customer
 
         public async Task HandleAsync(CreateCustomer command)
         {
-            var customer = await repository.LoadAsync(command.Id).ConfigureAwait(false);
+            var customer = await repository.LoadAsync(command.Id.Value).ConfigureAwait(false);
             if (customer is null)
             {
                 customer = new CustomerAggregate(command.Id, command.FirstName, command.LastName);
@@ -37,7 +36,7 @@ namespace Ecommerce.Customer
 
         public async Task HandleAsync(AddProductToCart command)
         {
-            var customer = await repository.LoadAsync(command.Id).ConfigureAwait(false);
+            var customer = await repository.LoadAsync(command.Id.Value).ConfigureAwait(false);
             if (customer is null) return;
 
             customer.AddToCart(command.Product, command.Quantity);
@@ -48,10 +47,14 @@ namespace Ecommerce.Customer
 
         public async Task HandleAsync(RemoveProductFromCart command)
         {
-            var customer = await repository.LoadAsync(command.Customerid).ConfigureAwait(false);
-            if (customer is null) return;
+            var customer = await repository.LoadAsync(command.Customerid.Value).ConfigureAwait(false);
+            if (customer is null) 
+                return;
+
             var cart = customer.State.Cart;
-            if (cart is null) return;
+            if (cart is null)
+                return;
+
             cart.RemoveProduct(command.Product.Sku);
             await repository.SaveAsync(customer).ConfigureAwait(false);
         }

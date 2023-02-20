@@ -13,7 +13,8 @@ namespace Ecommerce.Playground
             if (found.Any() == false)
                 return Task.FromResult<ShoppingCart>(null);
 
-            var state = new ShoppingCartState();
+            var cartId = new ShoppingCartId(id);
+            var state = new ShoppingCartState(cartId);
             foreach (var record in found)
             {
                 var bytes = record.Item3;
@@ -30,7 +31,7 @@ namespace Ecommerce.Playground
             foreach (var e in aggregateRoot.State.UnsavedEvents)
             {
                 var bytes = ToByteArray(e);
-                data.Add(new Tuple<string, Type, byte[]>(aggregateRoot.State.Id, e.GetType(), bytes));
+                data.Add(new Tuple<string, Type, byte[]>(aggregateRoot.State.Id.Value, e.GetType(), bytes));
             }
             return Task.CompletedTask;
         }

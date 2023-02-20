@@ -9,38 +9,31 @@ namespace Ecommerce.Cart
             State = state ?? throw new ArgumentNullException(nameof(state));
         }
 
-        public ShoppingCart(string id, string customerId)
+        public ShoppingCart(ShoppingCartId id)
         {
-            if (string.IsNullOrEmpty(id)) throw new ArgumentException($"'{nameof(id)}' cannot be null or empty.", nameof(id));
-            if (string.IsNullOrEmpty(customerId)) throw new ArgumentException($"'{nameof(customerId)}' cannot be null or empty.", nameof(customerId));
+            if (id is null) throw new ArgumentNullException(nameof(id));
 
-            State = new ShoppingCartState();
-            State.setCartIds(id, customerId);
-            //State.Apply();
+            State = new ShoppingCartState(id);
         }
 
-        public ShoppingCartState State { get;}
+        public ShoppingCartState State { get; }
 
         public void AddProduct(Product product, int quantity)
         {
             var shoppingCartItem = State.Items.FirstOrDefault(i => i.Product.Sku == product.Sku);
             if (shoppingCartItem is null)
-            {
-                var item = new ShoppingCartItem(product, quantity);
-                State.Apply(new ItemAddedToShoppingCart(item));
-            }
+                State.Apply(new ProductAddedToShoppingCart(State.Id, product, quantity));
             else
-            {
-                State.Apply(new ItemQuantityIncreased(shoppingCartItem, shoppingCartItem.Quantity, quantity));
-            }
-
+                State.Apply(new ProductQuantityIncreased(State.Id, product, shoppingCartItem.Quantity, quantity));
         }
 
         public void RemoveProduct(string sku)
         {
             var shoppingCartItem = State.Items.FirstOrDefault(i => i.Product.Sku == sku);
-            if (shoppingCartItem is null) return;
-            State.Apply(new ItemRemovedFromShoppingCart(sku));
+            if (shoppingCartItem is null)
+                return;
+
+            State.Apply(new ProductRemovedFromShoppingCart(State.Id, sku));
         }
     }
 }

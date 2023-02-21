@@ -2,19 +2,18 @@
 {
     public class Product : IEquatable<Product>
     {
-        public Product(string sku, string name, decimal price)
+        public Product(ProductSku sku, ProductName name, decimal price)
         {
-            if (string.IsNullOrEmpty(sku)) throw new ArgumentException($"'{nameof(sku)}' cannot be null or empty.", nameof(sku));
-            if (string.IsNullOrEmpty(name)) throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
             if (price < 0) throw new ArgumentOutOfRangeException(nameof(price));
 
-            Sku = sku;
-            Name = name;
+            Sku = sku ?? throw new ArgumentNullException(nameof(sku));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
             Price = price;
         }
 
-        public string Sku { get; }
-        public string Name { get; }
+        public ProductSku Sku { get; }
+        public ProductName Name { get; }
         public decimal Price { get; }
 
         public override int GetHashCode() => HashCode.Combine(Sku, Name, Price);

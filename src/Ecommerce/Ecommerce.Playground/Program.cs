@@ -6,7 +6,7 @@ using Ecommerce.Playground;
 var shoppingCartRepository = new ShoppingCartRepository();
 var customerRepo = new CustomerRepository(shoppingCartRepository);
 var appService = new CustomerApplicationService(customerRepo);
-var product = new Product("123", "phone", 200);
+var product = new Product(ProductSku.From("123"), ProductName.From("phone"), 200);
 
 var customerId = CustomerId.New();
 await appService.HandleAsync(new CreateCustomer(customerId, FirstName.From("Valio"), LastName.From("Kirov")));

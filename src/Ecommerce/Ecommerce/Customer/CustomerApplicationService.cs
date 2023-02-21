@@ -27,7 +27,7 @@ namespace Ecommerce.Customer
 
         public async Task HandleAsync(RenameCustomer command)
         {
-            var customer = await repository.LoadAsync(command.Id).ConfigureAwait(false);
+            var customer = await repository.LoadAsync(command.Id.Value).ConfigureAwait(false);
             if (customer is null)
                 return;
             customer.Rename(command.FirstName, command.LastName);

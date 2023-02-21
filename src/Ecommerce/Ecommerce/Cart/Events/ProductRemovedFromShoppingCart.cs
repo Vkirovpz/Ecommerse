@@ -2,16 +2,16 @@
 {
     public class ProductRemovedFromShoppingCart : IEvent
     {
-        public ProductRemovedFromShoppingCart(ShoppingCartId id, string sku)
+        public ProductRemovedFromShoppingCart(ShoppingCartId id, ProductSku sku)
         {
-            if (string.IsNullOrEmpty(sku)) throw new ArgumentException($"'{nameof(sku)}' cannot be null or empty.", nameof(sku));
+
 
             Id = id ?? throw new ArgumentNullException(nameof(id));
-            Sku = sku;
+            Sku = sku ?? throw new ArgumentNullException(nameof(sku));
         }
 
         public ShoppingCartId Id { get; }
 
-        public string Sku { get; }
+        public ProductSku Sku { get; }
     }
 }

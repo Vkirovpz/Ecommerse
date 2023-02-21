@@ -1,22 +1,8 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Ecommerce
+﻿namespace Ecommerce
 {
     public class ProductPrice : IEquatable<ProductPrice>
     {
-        public ProductPrice(string price)
-        {
-            if (string.IsNullOrWhiteSpace(price)) throw new ArgumentException($"'{nameof(price)}' cannot be null or whitespace.", nameof(price));
-
-            var parts = price.Split(":");
-            if (parts.Length != 2)
-                throw new InvalidOperationException($"Invalid shopping price '{price}'");
-
-            Price = decimal.Parse(parts[0]);
-            Currency = parts[1];
-        }
-
-        [JsonConstructor]
+    
         public ProductPrice(decimal price, string currency)
         {
             if (string.IsNullOrEmpty(currency)) throw new ArgumentException($"'{nameof(currency)}' cannot be null or empty.", nameof(currency));
@@ -27,9 +13,9 @@ namespace Ecommerce
 
         public decimal Price { get; }
         public string Currency { get; }
-        public string Value => $"{Price}:{Currency}";
 
-        public override string ToString() => Value;
+        public static ProductPrice From(decimal value, string currency) => new ProductPrice(value, currency);
+
         public override int GetHashCode() => HashCode.Combine(Price, Currency);
         public override bool Equals(object obj) => Equals(obj as ProductPrice);
 

@@ -32,8 +32,8 @@ namespace Ecommerce.Cart
             var shoppingCartItem = State.Items.FirstOrDefault(i => i.Product.Sku == product.Sku);
             if (shoppingCartItem is null)
                 return;
-
-            if (shoppingCartItem.Quantity <= quantity)
+           
+            if (shoppingCartItem.Quantity == quantity)
             {
                 State.Apply(new ProductRemovedFromShoppingCart(State.Id, product.Sku));
             }

@@ -9,10 +9,12 @@ public class CustomerRepository : IAggregateRootRepository<CustomerAggregate>
     private static readonly List<Tuple<string, Type, byte[]>> data = new();
 
     private readonly IAggregateRootRepository<ShoppingCart> cartRepository;
+    private readonly ProjectionHandler projectionHandler;
 
-    public CustomerRepository(IAggregateRootRepository<ShoppingCart> cartRepository)
+    public CustomerRepository(IAggregateRootRepository<ShoppingCart> cartRepository, ProjectionHandler projectionHandler)
     {
         this.cartRepository = cartRepository;
+        this.projectionHandler = projectionHandler;
     }
 
     public Task<CustomerAggregate> LoadAsync(string id)
@@ -54,6 +56,11 @@ public class CustomerRepository : IAggregateRootRepository<CustomerAggregate>
         if (cart is not null)
         {
             cartRepository.SaveAsync(cart);
+        }
+
+        foreach (var e in aggregateRoot.State.UnsavedEvents)
+        {
+            projectionHandler.Handle(e);
         }
 
         return Task.CompletedTask;

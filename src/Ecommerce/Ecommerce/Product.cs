@@ -2,19 +2,16 @@
 {
     public class Product : IEquatable<Product>
     {
-        public Product(ProductSku sku, ProductName name, decimal price)
+        public Product(ProductSku sku, ProductName name, ProductPrice price)
         {
-
-            if (price < 0) throw new ArgumentOutOfRangeException(nameof(price));
-
             Sku = sku ?? throw new ArgumentNullException(nameof(sku));
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            Price = price;
+            Price = price ?? throw new ArgumentNullException(nameof(price));
         }
 
         public ProductSku Sku { get; }
         public ProductName Name { get; }
-        public decimal Price { get; }
+        public ProductPrice Price { get; }
 
         public override int GetHashCode() => HashCode.Combine(Sku, Name, Price);
 

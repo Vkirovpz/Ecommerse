@@ -7,6 +7,13 @@ namespace Ecommerce.Playground
     public class ShoppingCartRepository : IAggregateRootRepository<ShoppingCart>
     {
         private static readonly List<Tuple<string, Type, byte[]>> data = new();
+        private readonly ProjectionHandler projectionHandler;
+
+        public ShoppingCartRepository(ProjectionHandler projectionHandler)
+        {
+            this.projectionHandler = projectionHandler;
+        }
+
         public Task<ShoppingCart> LoadAsync(string id)
         {
             var found = data.Where(x => x.Item1 == id);
@@ -32,7 +39,9 @@ namespace Ecommerce.Playground
             {
                 var bytes = ToByteArray(e);
                 data.Add(new Tuple<string, Type, byte[]>(aggregateRoot.State.Id.Value, e.GetType(), bytes));
+                projectionHandler.Handle(e);
             }
+
             return Task.CompletedTask;
         }
 

@@ -13,10 +13,10 @@ await appService.HandleAsync(new CreateCustomer(customerId, FirstName.From("Vali
 //await appService.HandleAsync(new RenameCustomer(id, "Valention", "Kirov"));
 await appService.HandleAsync(new AddProductToCart(customerId, product, 5));
 
-await appService.HandleAsync(new AddProductToCart(customerId, product, 2));
-//await appService.HandleAsync(new RemoveProductFromCart(customerId, product));
+//await appService.HandleAsync(new AddProductToCart(customerId, product, 2));
+await appService.HandleAsync(new RemoveProductFromCart(customerId, product, 2));
 
-var gg = await customerRepo.LoadAsync(customerId.Value);
+//var gg = await customerRepo.LoadAsync(customerId.Value);
 //var id2 = Guid.NewGuid().ToString();
 //await appService.HandleAsync(new CreateCustomer(id2, "Customer2", "Kirov"));
 //await appService.HandleAsync(new RenameCustomer(id2, "Customer222", "Kirov"));

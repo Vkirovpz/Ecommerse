@@ -45,6 +45,10 @@ namespace Ecommerce.Cart
             {
                 Quantity += count;
             }
+            public void DecreaseQuantity(int count)
+            {
+                Quantity -= count;
+            }
         }
 
         private void When(ProductAddedToShoppingCart e)
@@ -56,6 +60,12 @@ namespace Ecommerce.Cart
         {
             var item = Items.FirstOrDefault(i => i.Product == e.Product);
             item.IncreaseQuantity(e.NewQuantity);
+        }
+
+        private void When(ProductQuantityDecreased e)
+        {
+            var item = Items.FirstOrDefault(i => i.Product == e.Product);
+            item.DecreaseQuantity(e.NewQuantity);
         }
 
         private void When(ProductRemovedFromShoppingCart e)

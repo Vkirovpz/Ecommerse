@@ -23,7 +23,7 @@ namespace Ecommerce.Customer
 
         public CustomerState State { get; }
 
-        public void AddToCart(Product product, int quantity)
+        public void AddProductToCart(Product product, int quantity)
         {
             if (State.Cart is null)
             {
@@ -34,9 +34,9 @@ namespace Ecommerce.Customer
             State.Cart.AddProduct(product, quantity);
         }
 
-        public void RemoveFromCart(Product product)
+        public void RemoveProductFromCart(Product product, int quantity)
         {
-            State.Cart.RemoveProduct(product.Sku);
+            State.Cart.RemoveProduct(product, quantity);
         }
 
         public void Rename(FirstName firstName, LastName lastName)

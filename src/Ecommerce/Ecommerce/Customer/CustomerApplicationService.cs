@@ -39,7 +39,7 @@ namespace Ecommerce.Customer
             var customer = await repository.LoadAsync(command.Id.Value).ConfigureAwait(false);
             if (customer is null) return;
 
-            customer.AddToCart(command.Product, command.Quantity);
+            customer.AddProductToCart(command.Product, command.Quantity);
 
             await repository.SaveAsync(customer).ConfigureAwait(false);
 
@@ -55,7 +55,7 @@ namespace Ecommerce.Customer
             if (cart is null)
                 return;
 
-            cart.RemoveProduct(command.Product.Sku);
+            cart.RemoveProduct(command.Product, command.Quantity);
             await repository.SaveAsync(customer).ConfigureAwait(false);
         }
     }

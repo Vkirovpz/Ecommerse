@@ -27,13 +27,22 @@ namespace Ecommerce.Cart
                 State.Apply(new ProductQuantityIncreased(State.Id, product, shoppingCartItem.Quantity, quantity));
         }
 
-        public void RemoveProduct(string sku)
+        public void RemoveProduct(Product product, int quantity)
         {
-            var shoppingCartItem = State.Items.FirstOrDefault(i => i.Product.Sku == sku);
+            var shoppingCartItem = State.Items.FirstOrDefault(i => i.Product.Sku == product.Sku);
             if (shoppingCartItem is null)
                 return;
 
-            State.Apply(new ProductRemovedFromShoppingCart(State.Id, sku));
+            if (shoppingCartItem.Quantity <= quantity)
+            {
+                State.Apply(new ProductRemovedFromShoppingCart(State.Id, product.Sku));
+            }
+            else if (shoppingCartItem.Quantity > quantity)
+            {
+                State.Apply(new ProductQuantityDecreased(State.Id, product, shoppingCartItem.Quantity, quantity));
+            }
+
+           
         }
     }
 }

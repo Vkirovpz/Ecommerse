@@ -1,4 +1,6 @@
 ﻿using Ecommerce.Cart.Events;
+using Ecommerce.EntityFramework;
+using Ecommerce.EntityFramework.Models;
 
 namespace Ecommerce.Projections
 {
@@ -8,57 +10,60 @@ namespace Ecommerce.Projections
         IEventHandler<ProductQuantityIncreased>,
         IEventHandler<ProductQuantityDecreased>
     {
-        public static List<ProductView> Products { get; set; } = new();
+        private readonly EcommerceDbContext _dbContext;
 
-        public void Handle(ProductRemovedFromShoppingCart e)
+        public ProductsInCartsProjection(EcommerceDbContext dbContext)
         {
-            var product = Products.FirstOrDefault(p => p.Sku == e.Sku.ToString());
-            if (product is not null)
-            {
-                Products.Remove(product);
-            }
+            _dbContext = dbContext;
         }
-
         public void Handle(ProductAddedToShoppingCart e)
         {
-            if (Products.Any(p => p.Sku == e.Product.Sku.ToString()) == false)
+            if (_dbContext.Products.Any(p => p.Sku == e.Product.Sku) == false)
             {
-                Products.Add(new ProductView()
+                _dbContext.Products.Add(new EntityFramework.Models.ProductEfModel()
                 {
                     Sku = e.Product.Sku.ToString(),
                     Quantity = e.Quantity,
-                    Total = (e.Product.Price.Price) * e.Quantity
+                    Total = (e.Product.Price.Price) * e.Quantity,
+                    Currency = e.Product.Price.Currency
                 });
+                _dbContext.SaveChanges();
+            }
+        }
+
+        public void Handle(ProductRemovedFromShoppingCart e)
+        {
+            var product = _dbContext.Products.FirstOrDefault(p => p.Sku == e.Sku);
+
+            if (product is not null)
+            {
+                _dbContext.Products.Remove(product);
+                _dbContext.SaveChanges();
             }
         }
 
         public void Handle(ProductQuantityIncreased e)
         {
-            var product = Products.FirstOrDefault(p => p.Sku == e.Product.Sku.ToString());
+            var product = _dbContext.Products.FirstOrDefault(p => p.Sku == e.Product.Sku);
+
             if (product is not null)
             {
                 product.Quantity += e.NewQuantity;
                 product.Total += (e.Product.Price.Price * e.NewQuantity);
+                _dbContext.SaveChanges();
             }
         }
 
         public void Handle(ProductQuantityDecreased e)
         {
-            var product = Products.FirstOrDefault(p => p.Sku == e.Product.Sku.ToString());
+            var product = _dbContext.Products.FirstOrDefault(p => p.Sku == e.Product.Sku);
+
             if (product is not null)
             {
                 product.Quantity -= e.NewQuantity;
                 product.Total -= (e.Product.Price.Price * e.NewQuantity);
+                _dbContext.SaveChanges();
             }
-        }
-
-        public class ProductView
-        {
-            public string Sku { get; set; }
-
-            public int Quantity { get; set; }
-
-            public decimal Total { get; set; }
         }
     }
 }

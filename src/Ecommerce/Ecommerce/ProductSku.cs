@@ -14,7 +14,7 @@ namespace Ecommerce
 
         public string Value { get; }
 
-        public static ProductSku From(string value) => new ProductSku(value);
+        public static ProductSku From(string value) => new (value);
 
         public override string ToString() => Value;
         public override int GetHashCode() => Value.GetHashCode();
@@ -30,5 +30,9 @@ namespace Ecommerce
 
         public static bool operator ==(ProductSku obj1, ProductSku obj2) => obj1.Equals(obj2);
         public static bool operator !=(ProductSku obj1, ProductSku obj2) => (obj1 == obj2) == false;
+
+        public static implicit operator string(ProductSku s) => s.Value;
+
+        public static explicit operator ProductSku(string v) => new (v);
     }
 }

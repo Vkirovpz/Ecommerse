@@ -1,5 +1,4 @@
 ﻿using Ecommerce.Customer;
-using System.Collections;
 
 namespace Ecommerce
 {
@@ -30,5 +29,9 @@ namespace Ecommerce
 
         public static bool operator ==(ProductName obj1, ProductName obj2) => obj1.Equals(obj2);
         public static bool operator !=(ProductName obj1, ProductName obj2) => (obj1 == obj2) == false;
+
+        public static implicit operator string(ProductName s) => s.Value;
+
+        public static explicit operator ProductName(string v) => new(v);
     }
 }

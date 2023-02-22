@@ -8,9 +8,9 @@ namespace Ecommerce.Customer
         ICommandHandler<AddProductToCart>,
         ICommandHandler<RemoveProductFromCart>
     {
-        private readonly IAggregateRootRepository<CustomerAggregate> repository;
+        private readonly IAggregateRepository<CustomerAggregate> repository;
 
-        public CustomerApplicationService(IAggregateRootRepository<CustomerAggregate> repository)
+        public CustomerApplicationService(IAggregateRepository<CustomerAggregate> repository)
         {
             this.repository = repository;
         }

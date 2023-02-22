@@ -1,22 +1,25 @@
 ﻿using Ecommerce.Cart;
 using System.Text.Json;
 using System.Text;
+using Ecommerce.EntityFramework;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce.Playground
 {
-    public class ShoppingCartRepository : IAggregateRootRepository<ShoppingCart>
+    public class ShoppingCartRepository : IAggregateRepository<ShoppingCart>
     {
-        private static readonly List<Tuple<string, Type, byte[]>> data = new();
-        private readonly ProjectionHandler projectionHandler;
+        private readonly IProjectionHandler projectionHandler;
+        private readonly EcommerceEventsDbContext dbContext;
 
-        public ShoppingCartRepository(ProjectionHandler projectionHandler)
+        public ShoppingCartRepository(IProjectionHandler projectionHandler, EcommerceEventsDbContext dbContext)
         {
             this.projectionHandler = projectionHandler;
+            this.dbContext = dbContext;
         }
 
         public Task<ShoppingCart> LoadAsync(string id)
         {
-            var found = data.Where(x => x.Item1 == id);
+            var found = dbContext.Events.Where(x => x.EventId == id);
             if (found.Any() == false)
                 return Task.FromResult<ShoppingCart>(null);
 
@@ -24,8 +27,9 @@ namespace Ecommerce.Playground
             var state = new ShoppingCartState(cartId);
             foreach (var record in found)
             {
-                var bytes = record.Item3;
-                var obj = FromByteArray(record.Item2, bytes);
+                var bytes = record.EventData;
+                var type = Type.GetType(record.EventType);
+                var obj = FromByteArray(type, bytes);
                 state.Restore((dynamic)obj);
             }
 
@@ -33,16 +37,28 @@ namespace Ecommerce.Playground
             return Task.FromResult(cart);
         }
 
-        public Task SaveAsync(ShoppingCart aggregateRoot)
+        public async Task SaveAsync(ShoppingCart entity)
         {
-            foreach (var e in aggregateRoot.State.UnsavedEvents)
+            var records = new List<EventRecord>();
+            foreach (var e in entity.State.UnsavedEvents)
             {
                 var bytes = ToByteArray(e);
-                data.Add(new Tuple<string, Type, byte[]>(aggregateRoot.State.Id.Value, e.GetType(), bytes));
-                projectionHandler.Handle(e);
+                records.Add(new EventRecord
+                {
+                    EventId = entity.State.Id.Value,
+                    EventType = e.GetType().AssemblyQualifiedName,
+                    EventData = bytes,
+                    Origin = entity.GetType().AssemblyQualifiedName
+                });
             }
 
-            return Task.CompletedTask;
+            await dbContext.Events.AddRangeAsync(records);
+            await dbContext.SaveChangesAsync();
+
+            foreach (var e in entity.State.UnsavedEvents)
+            {
+                projectionHandler.Handle(e);
+            }
         }
 
         private static byte[] ToByteArray<T>(T obj)

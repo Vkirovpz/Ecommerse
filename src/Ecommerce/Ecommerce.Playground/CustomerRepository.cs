@@ -1,85 +1,97 @@
-﻿using Ecommerce;
-using Ecommerce.Cart;
+﻿using Ecommerce.Cart;
 using Ecommerce.Customer;
+using Ecommerce.EntityFramework;
 using System.Text;
 using System.Text.Json;
 
-public class CustomerRepository : IAggregateRootRepository<CustomerAggregate>
+namespace Ecommerce.Playground
 {
-    private static readonly List<Tuple<string, Type, byte[]>> data = new();
-
-    private readonly IAggregateRootRepository<ShoppingCart> cartRepository;
-    private readonly ProjectionHandler projectionHandler;
-
-    public CustomerRepository(IAggregateRootRepository<ShoppingCart> cartRepository, ProjectionHandler projectionHandler)
+    public class CustomerRepository : IAggregateRepository<CustomerAggregate>
     {
-        this.cartRepository = cartRepository;
-        this.projectionHandler = projectionHandler;
-    }
+        private readonly IAggregateRepository<ShoppingCart> cartRepository;
+        private readonly IProjectionHandler projectionHandler;
+        private readonly EcommerceEventsDbContext dbContext;
 
-    public Task<CustomerAggregate> LoadAsync(string id)
-    {
-        var found = data.Where(x => x.Item1 == id);
-        if (found.Any() == false)
-            return Task.FromResult<CustomerAggregate>(null);
-
-        var state = new CustomerState();
-        foreach (var record  in found)
+        public CustomerRepository(IAggregateRepository<ShoppingCart> cartRepository, IProjectionHandler projectionHandler, EcommerceEventsDbContext dbContext)
         {
-            var bytes = record.Item3;
-            var obj = FromByteArray(record.Item2, bytes);
-            state.Restore((dynamic)obj);
+            this.cartRepository = cartRepository;
+            this.projectionHandler = projectionHandler;
+            this.dbContext = dbContext;
         }
 
-        if (state.Cart is not null)
+        public Task<CustomerAggregate> LoadAsync(string id)
         {
-            var cartId = state.Cart.State.Id;
-            var cart = cartRepository.LoadAsync(state.Cart.State.Id.Value);
-            state.SetCart(cart.Result);
+            var found = dbContext.Events.Where(x => x.EventId == id);
+            if (found.Any() == false)
+                return Task.FromResult<CustomerAggregate>(null);
+
+            var state = new CustomerState();
+            foreach (var record in found)
+            {
+                var bytes = record.EventData;
+                var type = Type.GetType(record.EventType);
+                var obj = FromByteArray(type, bytes);
+                state.Restore((dynamic)obj);
+            }
+
+            if (state.Cart is not null)
+            {
+                var cartId = state.Cart.State.Id;
+                var cart = cartRepository.LoadAsync(state.Cart.State.Id.Value);
+                state.SetCart(cart.Result);
+            }
+
+            var customer = new CustomerAggregate(state);
+
+            return Task.FromResult(customer);
         }
 
-        var customer = new CustomerAggregate(state);
-
-        return Task.FromResult(customer);
-    }
-
-    public Task SaveAsync(CustomerAggregate aggregateRoot)
-    {
-        foreach (var e in aggregateRoot.State.UnsavedEvents)
+        public async Task SaveAsync(CustomerAggregate aggregateRoot)
         {
-            var bytes = ToByteArray(e);
-            data.Add(new Tuple<string, Type, byte[]>(aggregateRoot.State.Id.Value, e.GetType(), bytes));
+            var records = new List<EventRecord>();
+            foreach (var e in aggregateRoot.State.UnsavedEvents)
+            {
+                var bytes = ToByteArray(e);
+                records.Add(new EventRecord
+                {
+                    EventId = aggregateRoot.State.Id.Value,
+                    EventType = e.GetType().AssemblyQualifiedName,
+                    EventData = bytes,
+                    Origin = aggregateRoot.GetType().AssemblyQualifiedName
+                });
+            }
+
+            var cart = aggregateRoot.State.Cart;
+
+            if (cart is not null)
+            {
+                await cartRepository.SaveAsync(cart);
+            }
+
+            foreach (var e in aggregateRoot.State.UnsavedEvents)
+            {
+                projectionHandler.Handle(e);
+            }
+
+            await dbContext.Events.AddRangeAsync(records);
+            await dbContext.SaveChangesAsync();
         }
 
-        var cart = aggregateRoot.State.Cart;
-
-        if (cart is not null)
+        private static byte[] ToByteArray<T>(T obj)
         {
-            cartRepository.SaveAsync(cart);
+            if (obj == null)
+                return null;
+
+            var json = JsonSerializer.Serialize(obj, obj.GetType());
+            var bytes = Encoding.UTF8.GetBytes(json);
+            return bytes;
         }
 
-        foreach (var e in aggregateRoot.State.UnsavedEvents)
+        private static object FromByteArray(Type type, byte[] data)
         {
-            projectionHandler.Handle(e);
+            var json = Encoding.UTF8.GetString(data);
+            var obj = JsonSerializer.Deserialize(json, type);
+            return obj;
         }
-
-        return Task.CompletedTask;
-    }
-
-    private static byte[] ToByteArray<T>(T obj)
-    {
-        if (obj == null)
-            return null;
-
-        var json = JsonSerializer.Serialize(obj, obj.GetType());
-        var bytes = Encoding.UTF8.GetBytes(json);
-        return bytes;
-    }
-
-    private static object FromByteArray(Type type, byte[] data)
-    {
-        var json = Encoding.UTF8.GetString(data);
-        var obj = JsonSerializer.Deserialize(json, type);
-        return obj;
     }
 }

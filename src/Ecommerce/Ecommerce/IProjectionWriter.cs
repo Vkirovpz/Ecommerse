@@ -1,6 +1,6 @@
 ﻿namespace Ecommerce
 {
-    public interface IProjectionHandler
+    public interface IProjectionWriter
     {
         void Handle(IEvent e);
     }

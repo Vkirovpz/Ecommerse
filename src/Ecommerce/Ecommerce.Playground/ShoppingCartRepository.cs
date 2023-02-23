@@ -2,18 +2,17 @@
 using System.Text.Json;
 using System.Text;
 using Ecommerce.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce.Playground
 {
     public class ShoppingCartRepository : IAggregateRepository<ShoppingCart>
     {
-        private readonly IProjectionHandler projectionHandler;
+        private readonly IProjectionWriter projectionWriter;
         private readonly EcommerceEventsDbContext dbContext;
 
-        public ShoppingCartRepository(IProjectionHandler projectionHandler, EcommerceEventsDbContext dbContext)
+        public ShoppingCartRepository(IProjectionWriter projectionHandler, EcommerceEventsDbContext dbContext)
         {
-            this.projectionHandler = projectionHandler;
+            this.projectionWriter = projectionHandler;
             this.dbContext = dbContext;
         }
 
@@ -43,12 +42,11 @@ namespace Ecommerce.Playground
             foreach (var e in entity.State.UnsavedEvents)
             {
                 var bytes = ToByteArray(e);
-                records.Add(new EventRecord
+                 records.Add(new EventRecord
                 {
                     EventId = entity.State.Id.Value,
                     EventType = e.GetType().AssemblyQualifiedName,
-                    EventData = bytes,
-                    Origin = entity.GetType().AssemblyQualifiedName
+                    EventData = bytes
                 });
             }
 
@@ -57,7 +55,7 @@ namespace Ecommerce.Playground
 
             foreach (var e in entity.State.UnsavedEvents)
             {
-                projectionHandler.Handle(e);
+                projectionWriter.Handle(e);
             }
         }
 

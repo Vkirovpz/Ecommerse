@@ -17,11 +17,11 @@ var types = (from x in AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s
 
 var eventsDbContext = new EcommerceEventsDbContext();
 var dbContext = new EcommerceDbContext();
-var projHandler = new CompositeProjectionHandler(new EventSourcedProjectionHandler(types, eventsDbContext), new ProjectionHandler(types, dbContext));
+var projHandler = new EventSourcedProjectionWriter(types, eventsDbContext);
 var shoppingCartRepository = new ShoppingCartRepository(projHandler, eventsDbContext);
 var customerRepo = new CustomerRepository(shoppingCartRepository, projHandler, eventsDbContext);
 var appService = new CustomerApplicationService(customerRepo);
-var queryService = new CustomerQueryService(dbContext);
+//var queryService = new CustomerQueryService(dbContext);
 var product = new Product(ProductSku.From("123"), ProductName.From("phone"), ProductPrice.From(100, "USD"));
 
 var customerId = CustomerId.New();
@@ -29,9 +29,12 @@ await appService.HandleAsync(new CreateCustomer(customerId, FirstName.From("Vali
 await appService.HandleAsync(new RenameCustomer(customerId, FirstName.From("Elder-42"), LastName.From("TestLastName")));
 await appService.HandleAsync(new RenameCustomer(customerId, FirstName.From("Elder-42"), LastName.From("EldersLastName")));
 await appService.HandleAsync(new AddProductToCart(customerId, product, 5));
+await appService.HandleAsync(new AddProductToCart(customerId, product, 5));
 
-var projLoader = new EventSourcedProjectionLoader(eventsDbContext);
+
+var projLoader = new EventSourcedProjectionReader(eventsDbContext);
 var proj = projLoader.Load<CustomerDetailProjection>(customerId.Value);
+
 Console.WriteLine(proj.Id);
 Console.WriteLine(proj.FirstName);
 Console.WriteLine(proj.LastName);
@@ -46,13 +49,35 @@ foreach (var sku in proj.BoughtProducts)
 {
     Console.WriteLine(sku);
 }
+
+var productProjection = projLoader.Load<SkuDetailProjection>(product.Sku.Value);
+Console.WriteLine(productProjection.ProductInfo);
 Console.WriteLine();
-var result = await queryService.HandleAsync(new GetCustomerById(customerId.Value));
-if (result.Success)
-    Console.WriteLine(result.Result.FullName);
+foreach (var purchase in productProjection.PurchaseHistory)
+{
+    Console.WriteLine($"{purchase.customerName}, {purchase.quantity}");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//var result = await queryService.HandleAsync(new GetCustomerById(customerId.Value));
+//if (result.Success)
+//    Console.WriteLine(result.Result.FullName);
+
 
 //await appService.HandleAsync(new RemoveProductFromCart(customerId, product, 2));
-
 
 //var customer2Id = CustomerId.New();
 //await appService.HandleAsync(new CreateCustomer(customer2Id, FirstName.From("TestFirstName"), LastName.From("TestLastName")));

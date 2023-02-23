@@ -9,13 +9,13 @@ namespace Ecommerce.Playground
     public class CustomerRepository : IAggregateRepository<CustomerAggregate>
     {
         private readonly IAggregateRepository<ShoppingCart> cartRepository;
-        private readonly IProjectionHandler projectionHandler;
+        private readonly IProjectionWriter projectionWriter;
         private readonly EcommerceEventsDbContext dbContext;
 
-        public CustomerRepository(IAggregateRepository<ShoppingCart> cartRepository, IProjectionHandler projectionHandler, EcommerceEventsDbContext dbContext)
+        public CustomerRepository(IAggregateRepository<ShoppingCart> cartRepository, IProjectionWriter projectionHandler, EcommerceEventsDbContext dbContext)
         {
             this.cartRepository = cartRepository;
-            this.projectionHandler = projectionHandler;
+            this.projectionWriter = projectionHandler;
             this.dbContext = dbContext;
         }
 
@@ -27,18 +27,17 @@ namespace Ecommerce.Playground
 
             var state = new CustomerState();
             foreach (var record in found)
-            {
+              {
                 var bytes = record.EventData;
                 var type = Type.GetType(record.EventType);
                 var obj = FromByteArray(type, bytes);
                 state.Restore((dynamic)obj);
-            }
 
-            if (state.Cart is not null)
-            {
-                var cartId = state.Cart.State.Id;
-                var cart = cartRepository.LoadAsync(state.Cart.State.Id.Value);
-                state.SetCart(cart.Result);
+                if (state.Cart is not null)
+                {
+                    var cart = cartRepository.LoadAsync(state.Cart.State.Id.Value);
+                    state.SetCart(cart.Result);
+                }
             }
 
             var customer = new CustomerAggregate(state);
@@ -56,12 +55,14 @@ namespace Ecommerce.Playground
                 {
                     EventId = aggregateRoot.State.Id.Value,
                     EventType = e.GetType().AssemblyQualifiedName,
-                    EventData = bytes,
-                    Origin = aggregateRoot.GetType().AssemblyQualifiedName
+                    EventData = bytes
                 });
             }
 
             var cart = aggregateRoot.State.Cart;
+
+            await dbContext.Events.AddRangeAsync(records);
+            await dbContext.SaveChangesAsync();
 
             if (cart is not null)
             {
@@ -70,11 +71,10 @@ namespace Ecommerce.Playground
 
             foreach (var e in aggregateRoot.State.UnsavedEvents)
             {
-                projectionHandler.Handle(e);
+                projectionWriter.Handle(e);
             }
 
-            await dbContext.Events.AddRangeAsync(records);
-            await dbContext.SaveChangesAsync();
+
         }
 
         private static byte[] ToByteArray<T>(T obj)

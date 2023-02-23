@@ -1,6 +1,6 @@
 ﻿namespace Ecommerce.EntityFramework
 {
-    public class EventRecord
+    public class ProjectionEventRecord
     {
         public int Id { get; set; }
 
@@ -9,5 +9,7 @@
         public string EventType { get; init; }
 
         public byte[] EventData { get; init; }
+
+        public string Origin { get; init; }
     }
 }

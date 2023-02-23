@@ -6,11 +6,11 @@ using System.Text;
 
 namespace Ecommerce.Playground
 {
-    public class EventSourcedProjectionLoader
+    public class EventSourcedProjectionReader
     {
         private readonly EcommerceEventsDbContext context;
 
-        public EventSourcedProjectionLoader(EcommerceEventsDbContext context)
+        public EventSourcedProjectionReader(EcommerceEventsDbContext context)
         {
             this.context = context;
         }
@@ -18,7 +18,7 @@ namespace Ecommerce.Playground
         public T Load<T>(string id) where T : IHaveProjectionId, new()
         {
             var projType = typeof(T);
-            var events = context.Events.Where(x => x.Origin == projType.AssemblyQualifiedName && x.EventId == id);
+            var events = context.ProjectionsEvents.Where(x => x.Origin == projType.AssemblyQualifiedName && x.EventId == id);
             var proj = new T();
             foreach (var e in events)
             {

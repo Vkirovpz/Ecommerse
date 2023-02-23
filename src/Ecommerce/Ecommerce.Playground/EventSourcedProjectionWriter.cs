@@ -5,12 +5,12 @@ using System.Text;
 using Ecommerce.Projections;
 using System.Data;
 
-public class EventSourcedProjectionHandler : IProjectionHandler
+public class EventSourcedProjectionWriter : IProjectionWriter
 {
     private readonly IEnumerable<Type> handlersTypes;
     private readonly EcommerceEventsDbContext eventsDbContext;
 
-    public EventSourcedProjectionHandler(IEnumerable<Type> handlersTypes, EcommerceEventsDbContext eventsDbContext)
+    public EventSourcedProjectionWriter(IEnumerable<Type> handlersTypes, EcommerceEventsDbContext eventsDbContext)
     {
         this.handlersTypes = handlersTypes.Where(x => x.GetInterfaces().Contains(typeof(IHaveProjectionId)));
         this.eventsDbContext = eventsDbContext;
@@ -18,8 +18,7 @@ public class EventSourcedProjectionHandler : IProjectionHandler
 
     public void Handle(IEvent e)
     {
-        //var handlers = handlersTypes.Where(x => x.IsAssignableTo(typeof(IEventHandler<>).GetGenericTypeDefinition()));
-        var records = new List<EventRecord>();
+        var records = new List<ProjectionEventRecord>();
         foreach (var handlerType in handlersTypes)
         {
             var handler = handlerType.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GenericTypeArguments.First() == e.GetType());
@@ -27,7 +26,7 @@ public class EventSourcedProjectionHandler : IProjectionHandler
                 continue;
 
             var projection = (IHaveProjectionId)Activator.CreateInstance(handlerType);
-            var record = new EventRecord
+            var record = new ProjectionEventRecord
             {
                 EventId = projection.GetId(e),
                 EventType = e.GetType().AssemblyQualifiedName,
@@ -38,25 +37,8 @@ public class EventSourcedProjectionHandler : IProjectionHandler
             records.Add(record);
         }
 
-        eventsDbContext.Events.AddRange(records);
+        eventsDbContext.ProjectionsEvents.AddRange(records);
         eventsDbContext.SaveChanges();
-
-        //if (events.Contains(e.GetType()) == false)
-        //    return;
-        //var interestedHandlers = handlersTypes.Where(x => x.GetInterfaces().Any(i => i.GetType() == typeof(IEventHandler<>) && i.GenericTypeArguments.First() == e.GetType()));
-        //foreach (var type in interestedHandlers)
-        //{
-        //    var projection = (IHaveProjectionId)Activator.CreateInstance(type);
-
-        //    dbContext.Set<EventRecord>(type.Name).Add(new EventRecord
-        //    {
-        //        Id = projection.GetId(e),
-        //        Type = e.GetType().FullName,
-        //        Data = ToByteArray(e)
-        //    });
-        //}
-
-        //dbContext.SaveChanges();
     }
 
     private static byte[] ToByteArray<T>(T obj)
@@ -67,5 +49,5 @@ public class EventSourcedProjectionHandler : IProjectionHandler
         var json = JsonSerializer.Serialize(obj, obj.GetType());
         var bytes = Encoding.UTF8.GetBytes(json);
         return bytes;
-    }
+    }   
 }
